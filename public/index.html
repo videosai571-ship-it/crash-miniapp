@@ -60,19 +60,20 @@ function burst(x,y,c,n){for(let i=0;i<n;i++){const a=Math.random()*6.28,s=1+Math
 function draw(){cx.clearRect(0,0,W,H);for(const s of stars){cx.fillStyle='rgba(255,255,255,.25)';cx.beginPath();cx.arc(s.x*W,s.y*H,s.r,0,6.28);cx.fill()}
 const m=curM(),t=Math.log(m)/K,T=Math.max(8,t*1.2),M=Math.max(2,m*1.25),px=W*.08,py=H*.12,pw=W-px*2,ph=H-py*2;
 const X=tt=>px+tt/T*pw,Y=mm=>H-py-(mm-1)/(M-1)*ph;
+const isWin=$('#stage').classList.contains('win');
 if(st!=='idle'||m>1){cx.beginPath();cx.moveTo(X(0),Y(1));for(let i=1;i<=60;i++){const tt=t*i/60;cx.lineTo(X(tt),Y(Math.exp(K*tt)))}
-const col=st==='end'&&endM>1&&!\( ('#stage').classList.contains('win')?'#ff3d52':st==='end'&& \)('#stage').classList.contains('win')?'#20e3a0':'#ffb31f';
+const col=st==='end'&&!isWin?'#ff3d52':st==='end'&&isWin?'#20e3a0':'#ffb31f';
 cx.strokeStyle=col;cx.lineWidth=3.5;cx.shadowColor=col;cx.shadowBlur=14;cx.stroke();cx.shadowBlur=0;
 cx.lineTo(X(t),H-py);cx.lineTo(X(0),H-py);const g=cx.createLinearGradient(0,py,0,H);g.addColorStop(0,col+'44');g.addColorStop(1,col+'00');cx.fillStyle=g;cx.fill();
 tip.x=X(t);tip.y=Y(m);const dm=Math.exp(K*(t+.05));tip.a=Math.atan2(Y(dm)-tip.y,X(t+.05)-tip.x);
-if(st!=='end'||$('#stage').classList.contains('win')){cx.save();cx.translate(tip.x,tip.y);cx.rotate(tip.a+Math.PI/4);cx.font='30px serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText('🚀',0,0);cx.restore()}}
+if(st!=='end'||isWin){cx.save();cx.translate(tip.x,tip.y);cx.rotate(tip.a+Math.PI/4);cx.font='30px serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText('🚀',0,0);cx.restore()}}
 parts=parts.filter(p=>p.l>0);for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.08;p.l-=.02;cx.globalAlpha=Math.max(0,p.l);cx.fillStyle=p.c;cx.fillRect(p.x,p.y,3.5,3.5)}cx.globalAlpha=1;
 const mt=$('#mult'),f=Math.floor(m*100)/100;mt.textContent=f.toFixed(2)+'x';
 if(st==='run'){const g2=$('#go');const tx='💰 Olish  '+fmt(bet*f);if(g2.textContent!==tx)g2.textContent=tx}
 requestAnimationFrame(draw)}
 function ui(){const g=$('#go');g.className=st==='run'?'cash':'';g.disabled=false;if(st!=='run')g.textContent=st==='end'?'🔁 Yana o\'ynash':'🚀 Boshlash '+fmt(bet);
 for(const e of document.querySelectorAll('.chips button,.st,#bet,.au button'))e.disabled=st==='run';$('#bal').textContent=fmt(bal)}
-function hist(h){$('#hist').innerHTML=(h||[]).slice().reverse().map(x=>`<span class="num \( {x>=2?'w':x<1.5?'l':''}"> \){x.toFixed(2)}x</span>`).join('')}
+function hist(h){$('#hist').innerHTML=(h||[]).slice().reverse().map(x=>`<span class="num ${x>=2?'w':x<1.5?'l':''}">${x.toFixed(2)}x</span>`).join('')}
 function finish(r){if(st==='end')return;st='end';const S=$('#stage');bal=r.bal;endM=r.how==='crash'?r.point:r.mult;hist(r.hist);
 if(r.how==='crash'){S.className='crash';$('#sub').textContent='💥 Portladi! −'+fmt(r.bet);burst(tip.x,tip.y,'#ff5a2e',60);hap('notificationOccurred','error')}
 else{S.className='win';$('#sub').textContent=(r.how==='auto'?'🤖 Avto-olish  ':'💰 Olindi  ')+'+'+fmt(r.payout-r.bet)+' · raketa '+r.point.toFixed(2)+'x da portlardi';burst(tip.x,tip.y,'#20e3a0',50);hap('notificationOccurred','success')}ui()}
@@ -81,13 +82,14 @@ setInterval(()=>{if(st==='run')post('poll').then(sync)},350);
 $('#go').onclick=async()=>{if(busy)return;busy=1;hap('impactOccurred','medium');
 if(st==='run'){const r=await post('cash');busy=0;if(r.err)return toast(r.err);if(r.state==='end')finish(r);return}
 const r=await post('start',{bet,auto});busy=0;if(r.err)return toast(r.err);
-st='run';tb=0;ts=performance.now();bal=r.bal;\( ('#stage').className=''; \)('#sub').textContent='Portlashidan oldin «Olish» ni bosing!';ui()};
-\( ('#mn').onclick=()=>{setBet(bet-Math.max(10,Math.round(bet*.1)));ui()}; \)('#pl').onclick=()=>{setBet(bet+Math.max(10,Math.round(bet*.1)));ui()};
+st='run';tb=0;ts=performance.now();bal=r.bal;$('#stage').className='';$('#sub').textContent='Portlashidan oldin «Olish» ni bosing!';ui()};
+$('#mn').onclick=()=>{setBet(bet-Math.max(10,Math.round(bet*.1)));ui()};
+$('#pl').onclick=()=>{setBet(bet+Math.max(10,Math.round(bet*.1)));ui()};
 $('#bet').onchange=e=>{setBet(+e.target.value);ui()};
 document.querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{const c=b.dataset.c;setBet(c==='min'?mn:c==='max'?Math.min(mx,bal):c==='h'?bet/2:bet*2);ui()});
-function autos(a){\( ('#au').innerHTML=a.map(v=>`<button data-a=" \){v}" class="\( {v===auto?'on':''}"> \){v?(v/10)+'x':'Avto ✕'}</button>`).join('');
+function autos(a){$('#au').innerHTML=a.map(v=>`<button data-a="${v}" class="${v===auto?'on':''}">${v?(v/10)+'x':'Avto ✕'}</button>`).join('');
 document.querySelectorAll('#au button').forEach(b=>b.onclick=()=>{auto=+b.dataset.a;autos(a)})}
-(async()=>{rs();draw();const r=await post('state');if(r.err){\( ('#sub').textContent=r.err; \)('#go').disabled=true;return}
+(async()=>{rs();draw();const r=await post('state');if(r.err){$('#sub').textContent=r.err;$('#go').disabled=true;return}
 K=r.k;mn=r.min;mx=r.max;bal=r.bal;auto=r.auto;setBet(r.bet);autos(r.autos);hist(r.hist);
 if(r.active){st='run';tb=r.active.t;ts=performance.now();setBet(r.active.bet);$('#sub').textContent='Raund davom etmoqda'}ui()})();
 </script></body></html>
