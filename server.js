@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const BOT_TOKEN = process.env.9122790412:AAHKXZ3ttaovPya2ZFITSqA5InS0YEXPDc0 || '';
+const BOT_TOKEN = '9122790412:AAHKXZ3ttaovPya2ZFITSqA5InS0YEXPDc0';
 const PORT = process.env.PORT || 3000;
 
 const users = new Map();
@@ -24,7 +24,7 @@ function verifyInitData(initData) {
     params.delete('hash');
     const dataCheck = [...params.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([k, v]) => `\( {k}= \){v}`)
+      .map(([k, v]) => `${k}=${v}`)
       .join('\n');
     const secret = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest();
     const calculated = crypto.createHmac('sha256', secret).update(dataCheck).digest('hex');
@@ -184,3 +184,4 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => console.log('Crash server ' + PORT + ' da ishlayapti'));
+
